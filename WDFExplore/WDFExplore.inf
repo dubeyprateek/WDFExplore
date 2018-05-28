@@ -1,0 +1,86 @@
+;
+; WDFExplore.inf
+;
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=Sample ; TODO: edit Class
+ClassGuid={78A1C341-4539-11d3-B88D-00C04FAD5171} ; TODO: edit ClassGuid
+Provider=%ManufacturerName%
+CatalogFile=WDFExplore.cat
+DriverVer= ; TODO: set DriverVer in stampinf property pages
+
+[DestinationDirs]
+DefaultDestDir = 12
+WDFExplore_Device_CoInstaller_CopyFiles = 11
+
+; ================= Class section =====================
+
+[ClassInstall32]
+Addreg=SampleClassReg
+
+[SampleClassReg]
+HKR,,,0,%ClassName%
+HKR,,Icon,,-5
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+WDFExplore.sys  = 1,,
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll=1 ; make sure the number matches with SourceDisksNames
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName%=Standard,NT$ARCH$
+
+[Standard.NT$ARCH$]
+%WDFExplore.DeviceDesc%=WDFExplore_Device, Root\WDFExplore ; TODO: edit hw-id
+
+[WDFExplore_Device.NT]
+CopyFiles=Drivers_Dir
+
+[Drivers_Dir]
+WDFExplore.sys
+
+;-------------- Service installation
+[WDFExplore_Device.NT.Services]
+AddService = WDFExplore,%SPSVCINST_ASSOCSERVICE%, WDFExplore_Service_Inst
+
+; -------------- WDFExplore driver install sections
+[WDFExplore_Service_Inst]
+DisplayName    = %WDFExplore.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\WDFExplore.sys
+
+;
+;--- WDFExplore_Device Coinstaller installation ------
+;
+
+[WDFExplore_Device.NT.CoInstallers]
+AddReg=WDFExplore_Device_CoInstaller_AddReg
+CopyFiles=WDFExplore_Device_CoInstaller_CopyFiles
+
+[WDFExplore_Device_CoInstaller_AddReg]
+HKR,,CoInstallers32,0x00010000, "WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll,WdfCoInstaller"
+
+[WDFExplore_Device_CoInstaller_CopyFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll
+
+[WDFExplore_Device.NT.Wdf]
+KmdfService =  WDFExplore, WDFExplore_wdfsect
+[WDFExplore_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+ManufacturerName="<Your manufacturer name>" ;TODO: Replace with your manufacturer name
+ClassName="Samples" ; TODO: edit ClassName
+DiskName = "WDFExplore Installation Disk"
+WDFExplore.DeviceDesc = "WDFExplore Device"
+WDFExplore.SVCDESC = "WDFExplore Service"
